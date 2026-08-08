@@ -17,3 +17,4 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: 'Daily GitHub Update'
           body: 'Here are the latest updates from GitHub...'
+"# AI-Based-Satellite-Image-Change-Detection-for-Illegal-Land-Encroachment" 
