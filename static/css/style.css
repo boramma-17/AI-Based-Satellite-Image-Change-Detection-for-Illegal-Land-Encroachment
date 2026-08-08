@@ -1,0 +1,428 @@
+/* ================================
+   GeoGuard AI - Main Stylesheet
+   ================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b1224 0%,
+            #10243c 50%,
+            #0b172b 100%
+        );
+
+    color: #e5f3ff;
+}
+
+
+/* ================================
+   NAVBAR
+   ================================ */
+
+.navbar {
+    width: 100%;
+
+    background: rgba(5, 15, 30, 0.92);
+
+    border-bottom: 1px solid rgba(80, 190, 255, 0.25);
+
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nav-container {
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 18px 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.logo {
+    color: #62c9ff;
+
+    text-decoration: none;
+
+    font-size: 25px;
+
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+
+    gap: 25px;
+
+    align-items: center;
+}
+
+.nav-links a {
+    color: #d9efff;
+
+    text-decoration: none;
+
+    font-size: 16px;
+
+    transition: 0.2s;
+}
+
+.nav-links a:hover {
+    color: #36c5ff;
+}
+
+
+/* ================================
+   MAIN
+   ================================ */
+
+.main-container {
+    width: 100%;
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    padding: 50px 30px;
+
+    min-height: calc(100vh - 140px);
+}
+
+
+/* ================================
+   FLASH MESSAGES
+   ================================ */
+
+.flash-container {
+    margin-bottom: 25px;
+}
+
+.flash {
+    padding: 14px 18px;
+
+    margin-bottom: 10px;
+
+    border-radius: 8px;
+
+    font-size: 15px;
+}
+
+.flash.success {
+    background: rgba(34, 197, 94, 0.15);
+
+    border: 1px solid rgba(34, 197, 94, 0.4);
+
+    color: #86efac;
+}
+
+.flash.error {
+    background: rgba(239, 68, 68, 0.15);
+
+    border: 1px solid rgba(239, 68, 68, 0.4);
+
+    color: #fca5a5;
+}
+
+
+/* ================================
+   HEADINGS
+   ================================ */
+
+h1 {
+    font-size: 42px;
+
+    margin-bottom: 20px;
+
+    color: #a9e4ff;
+}
+
+h2 {
+    font-size: 30px;
+
+    margin-bottom: 18px;
+
+    color: #9bdcff;
+}
+
+h3 {
+    color: #8edaff;
+}
+
+
+/* ================================
+   LINKS
+   ================================ */
+
+a {
+    color: #39c6ff;
+}
+
+a:hover {
+    color: #8be0ff;
+}
+
+
+/* ================================
+   FORMS
+   ================================ */
+
+form {
+    width: 100%;
+}
+
+label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #9db0c8;
+
+    font-size: 15px;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+
+    padding: 13px 15px;
+
+    border-radius: 8px;
+
+    border: 1px solid #33465f;
+
+    background: rgba(15, 27, 48, 0.9);
+
+    color: white;
+
+    font-size: 16px;
+
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #35c4ff;
+
+    box-shadow:
+        0 0 0 2px rgba(53, 196, 255, 0.15);
+}
+
+input::placeholder {
+    color: #73839a;
+}
+
+
+/* ================================
+   BUTTONS
+   ================================ */
+
+button,
+.btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 13px 22px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #36b9f0,
+            #16c0a9
+        );
+
+    color: #06121f;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+button:hover,
+.btn:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 25px rgba(30, 200, 255, 0.25);
+}
+
+
+/* ================================
+   CARDS
+   ================================ */
+
+.card {
+    background: rgba(24, 38, 60, 0.9);
+
+    border: 1px solid rgba(120, 180, 220, 0.18);
+
+    border-radius: 16px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ================================
+   AUTH PAGE
+   ================================ */
+
+.auth-container {
+    width: 100%;
+
+    max-width: 500px;
+
+    margin: 40px auto;
+
+    padding: 35px;
+
+    background: rgba(24, 38, 60, 0.95);
+
+    border: 1px solid rgba(100, 180, 220, 0.2);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.auth-container h1 {
+    text-align: center;
+
+    margin-bottom: 30px;
+}
+
+.auth-form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+}
+
+
+/* ================================
+   TABLE
+   ================================ */
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background: rgba(15, 27, 48, 0.8);
+}
+
+th,
+td {
+    padding: 14px;
+
+    text-align: left;
+
+    border-bottom: 1px solid #293b52;
+}
+
+th {
+    color: #8edaff;
+}
+
+td {
+    color: #d8e8f5;
+}
+
+
+/* ================================
+   IMAGES
+   ================================ */
+
+img {
+    max-width: 100%;
+
+    height: auto;
+
+    border-radius: 10px;
+}
+
+
+/* ================================
+   FOOTER
+   ================================ */
+
+footer {
+    text-align: center;
+
+    padding: 20px;
+
+    color: #72859c;
+
+    border-top: 1px solid rgba(100, 180, 220, 0.15);
+}
+
+
+/* ================================
+   MOBILE
+   ================================ */
+
+@media (max-width: 700px) {
+
+    .nav-container {
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+
+        justify-content: center;
+
+        gap: 15px;
+    }
+
+    .main-container {
+        padding: 30px 15px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+}

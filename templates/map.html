@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detection Map - GeoGuard AI
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        Detection Locations
+    </h1>
+
+    {% if detections %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Detection</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for detection in detections %}
+
+                <tr>
+
+                    <td>
+                        #{{ detection["id"] }}
+                    </td>
+
+                    <td>
+                        {{ detection["latitude"] or "N/A" }}
+                    </td>
+
+                    <td>
+                        {{ detection["longitude"] or "N/A" }}
+                    </td>
+
+                    <td>
+
+                        {% if detection["encroachment_flag"] %}
+
+                            <span class="danger">
+                                Encroachment
+                            </span>
+
+                        {% else %}
+
+                            <span class="success">
+                                Clear
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    {% else %}
+
+        <p class="muted">
+            No detection locations available.
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+Register - GeoGuard AI
+{% endblock %}
+
+{% block content %}
+
+<div style="max-width:550px;margin:auto;">
+
+    <div class="card">
+
+        <h1>
+            Create Your Account
+        </h1>
+
+        <p class="muted">
+            Register to use AI satellite change detection.
+        </p>
+
+        <form
+            action="{{ url_for('auth.register') }}"
+            method="POST"
+        >
+
+            <label>
+                Full Name
+            </label>
+
+            <input
+                type="text"
+                name="username"
+                value="{{ username or '' }}"
+                required
+                placeholder="John Doe"
+            >
+
+            <label>
+                Email Address
+            </label>
+
+            <input
+                type="email"
+                name="email"
+                value="{{ email or '' }}"
+                required
+                placeholder="name@example.com"
+            >
+
+            <label>
+                Password
+            </label>
+
+            <input
+                type="password"
+                name="password"
+                required
+                placeholder="Minimum 6 characters"
+            >
+
+            <label>
+                Confirm Password
+            </label>
+
+            <input
+                type="password"
+                name="confirm_password"
+                required
+                placeholder="Repeat your password"
+            >
+
+            <button
+                type="submit"
+                style="width:100%;"
+            >
+                Create Account
+            </button>
+
+        </form>
+
+        <p class="muted"
+           style="text-align:center;margin-top:20px;">
+
+            Already registered?
+
+            <a href="{{ url_for('auth.login') }}">
+                Log in
+            </a>
+
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

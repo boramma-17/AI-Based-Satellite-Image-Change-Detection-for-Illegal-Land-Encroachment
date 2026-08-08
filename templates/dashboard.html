@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard - GeoGuard AI
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        Dashboard
+    </h1>
+
+    <p class="muted">
+        Welcome,
+        {{ session.get("username") }}.
+    </p>
+
+    <div class="grid">
+
+        <div class="stat">
+
+            <div class="muted">
+                Total Detections
+            </div>
+
+            <div class="stat-number">
+                {{ stats["total"] }}
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="muted">
+                Encroachments Detected
+            </div>
+
+            <div class="stat-number">
+                {{ stats["flagged"] }}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card"
+     style="margin-top:25px;">
+
+    <h2>
+        Recent Detections
+    </h2>
+
+    {% if recent %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Change</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for record in recent %}
+
+                <tr>
+
+                    <td>
+                        #{{ record["id"] }}
+                    </td>
+
+                    <td>
+                        {{ record["title"] or "Detection" }}
+                    </td>
+
+                    <td>
+                        {{ "%.2f"|format(
+                            record["change_percent"] or 0
+                        ) }}%
+                    </td>
+
+                    <td>
+
+                        {% if record["encroachment_flag"] %}
+
+                            <span class="danger">
+                                Detected
+                            </span>
+
+                        {% else %}
+
+                            <span class="success">
+                                No Encroachment
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+                        {{ record["created_at"] }}
+                    </td>
+
+                    <td>
+
+                        <a
+                            class="btn"
+                            href="{{ url_for(
+                                'detection.result',
+                                detection_id=record['id']
+                            ) }}"
+                        >
+                            View
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    {% else %}
+
+        <p class="muted">
+            No detections yet.
+        </p>
+
+        <a
+            class="btn"
+            href="{{ url_for('upload.upload') }}"
+        >
+            Upload Satellite Images
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

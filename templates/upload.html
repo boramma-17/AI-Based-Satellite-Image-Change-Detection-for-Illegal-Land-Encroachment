@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}
+Upload Satellite Images - GeoGuard AI
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        Upload Satellite Imagery
+    </h1>
+
+    <p class="muted">
+        Compare a baseline image with a recent image.
+    </p>
+
+    <form
+        action="{{ url_for('upload.upload') }}"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <label>
+            Detection Title
+        </label>
+
+        <input
+            type="text"
+            name="title"
+            placeholder="Land Encroachment Check"
+        >
+
+        <div class="grid">
+
+            <div>
+
+                <label>
+                    Before Image (Baseline)
+                </label>
+
+                <input
+                    type="file"
+                    name="before_image"
+                    accept=".png,.jpg,.jpeg,.tif,.tiff"
+                    required
+                >
+
+            </div>
+
+            <div>
+
+                <label>
+                    After Image (Recent)
+                </label>
+
+                <input
+                    type="file"
+                    name="after_image"
+                    accept=".png,.jpg,.jpeg,.tif,.tiff"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+        <div class="grid">
+
+            <div>
+
+                <label>
+                    Latitude (Optional)
+                </label>
+
+                <input
+                    type="number"
+                    step="any"
+                    name="latitude"
+                    placeholder="17.3850"
+                >
+
+            </div>
+
+            <div>
+
+                <label>
+                    Longitude (Optional)
+                </label>
+
+                <input
+                    type="number"
+                    step="any"
+                    name="longitude"
+                    placeholder="78.4867"
+                >
+
+            </div>
+
+        </div>
+
+        <button
+            type="submit"
+            style="width:100%;"
+        >
+            Run Encroachment Detection
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+GeoGuard AI - Home
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        AI-Based Satellite Image Change Detection
+    </h1>
+
+    <p class="muted">
+        Detect possible land encroachment by comparing
+        baseline and recent satellite imagery.
+    </p>
+
+    {% if session.get("user_id") %}
+
+        <a class="btn"
+           href="{{ url_for('upload.upload') }}">
+            Start Detection
+        </a>
+
+    {% else %}
+
+        <a class="btn"
+           href="{{ url_for('auth.login') }}">
+            Login
+        </a>
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('auth.register') }}">
+            Create Account
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

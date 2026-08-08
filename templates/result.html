@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detection Result - GeoGuard AI
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        Detection Result
+    </h1>
+
+    <p class="muted">
+
+        Detection #{{ detection["id"] }}
+
+        {% if detection["title"] %}
+            — {{ detection["title"] }}
+        {% endif %}
+
+    </p>
+
+    <div class="grid">
+
+        <div class="stat">
+
+            <div class="muted">
+                Change Percentage
+            </div>
+
+            <div class="stat-number">
+
+                {{ "%.2f"|format(
+                    detection["change_percent"] or 0
+                ) }}%
+
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="muted">
+                Encroachment Status
+            </div>
+
+            <div class="stat-number">
+
+                {% if detection["encroachment_flag"] %}
+
+                    <span class="danger">
+                        DETECTED
+                    </span>
+
+                {% else %}
+
+                    <span class="success">
+                        NOT DETECTED
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card"
+     style="margin-top:25px;">
+
+    <h2>
+        Satellite Images
+    </h2>
+
+    <div class="images">
+
+        <div>
+
+            <h3>
+                Before Image
+            </h3>
+
+            <img
+                src="{{ url_for(
+                    'media_before',
+                    filename=detection['before_image']
+                ) }}"
+                alt="Before satellite image"
+            >
+
+        </div>
+
+
+        <div>
+
+            <h3>
+                After Image
+            </h3>
+
+            <img
+                src="{{ url_for(
+                    'media_after',
+                    filename=detection['after_image']
+                ) }}"
+                alt="After satellite image"
+            >
+
+        </div>
+
+
+        {% if detection["result_image"] %}
+
+        <div>
+
+            <h3>
+                AI Detection Result
+            </h3>
+
+            <img
+                src="{{ url_for(
+                    'media_results',
+                    filename=detection['result_image']
+                ) }}"
+                alt="AI detection result"
+            >
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<div class="card"
+     style="margin-top:25px;">
+
+    {% if detection["result_image"] %}
+
+        <a
+            class="btn"
+            href="{{ url_for(
+                'report.download_report',
+                detection_id=detection['id']
+            ) }}"
+        >
+            Download PDF Report
+        </a>
+
+    {% endif %}
+
+    <a
+        class="btn btn-secondary"
+        href="{{ url_for('history.history') }}"
+    >
+        Back to History
+    </a>
+
+</div>
+
+{% endblock %}

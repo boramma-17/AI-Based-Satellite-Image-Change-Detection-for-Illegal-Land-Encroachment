@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detection History - GeoGuard AI
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        Detection History
+    </h1>
+
+    {% if detections %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Change</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th></th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for detection in detections %}
+
+                <tr>
+
+                    <td>
+                        #{{ detection["id"] }}
+                    </td>
+
+                    <td>
+                        {{ detection["title"] or "Detection" }}
+                    </td>
+
+                    <td>
+
+                        {{ "%.2f"|format(
+                            detection["change_percent"] or 0
+                        ) }}%
+
+                    </td>
+
+                    <td>
+
+                        {% if detection["encroachment_flag"] %}
+
+                            <span class="danger">
+                                Detected
+                            </span>
+
+                        {% else %}
+
+                            <span class="success">
+                                Clear
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+                        {{ detection["created_at"] }}
+                    </td>
+
+                    <td>
+
+                        <a
+                            class="btn"
+                            href="{{ url_for(
+                                'detection.result',
+                                detection_id=detection['id']
+                            ) }}"
+                        >
+                            View
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <div style="margin-top:25px;">
+
+            {% if has_prev %}
+
+                <a
+                    class="btn btn-secondary"
+                    href="{{ url_for(
+                        'history.history',
+                        page=page-1
+                    ) }}"
+                >
+                    Previous
+                </a>
+
+            {% endif %}
+
+            {% if has_next %}
+
+                <a
+                    class="btn"
+                    href="{{ url_for(
+                        'history.history',
+                        page=page+1
+                    ) }}"
+                >
+                    Next
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% else %}
+
+        <p class="muted">
+            You have not performed any detections yet.
+        </p>
+
+        <a
+            class="btn"
+            href="{{ url_for('upload.upload') }}"
+        >
+            Start Detection
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
