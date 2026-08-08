@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Daily Update Email
 
 on:
@@ -17,4 +18,8 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: 'Daily GitHub Update'
           body: 'Here are the latest updates from GitHub...'
+"# AI-Based-Satellite-Image-Change-Detection-for-Illegal-Land-Encroachment" 
+=======
+#git
+>>>>>>> 376ce334f8457f7c4bf89a57c8c8ea2b42f576cd
 "# AI-Based-Satellite-Image-Change-Detection-for-Illegal-Land-Encroachment" 
