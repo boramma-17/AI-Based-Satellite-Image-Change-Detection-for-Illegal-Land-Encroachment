@@ -1,0 +1,50 @@
+{# templates/_land_classification.html
+   Include with: {% include "_land_classification.html" %}
+   Expects a `land_classification` dict in context, matching the return
+   shape of land_classifier.classify_land():
+     {
+       "percentages": {"forest": 42.1, "water": 12.4, "open_land": 30.0,
+                        "built_up": 12.0, "unclassified": 3.5},
+       "dominant": "forest",
+       "overlay_url": "/static/uploads/overlay_123.png"   <- url, not filesystem path
+     }
+#}
+
+{% if land_classification %}
+<div class="card">
+
+    <h2>Land Classification</h2>
+    <p class="muted">Detected land types based on color and texture analysis.</p>
+
+    <div class="land-class-card">
+
+        <div class="land-class-image">
+            <img src="{{ land_classification.overlay_url }}" alt="Land classification overlay">
+        </div>
+
+        <div class="land-class-legend">
+
+            {% for cls, label in [
+                ("forest", "Forest / Vegetation"),
+                ("water", "Water Body"),
+                ("open_land", "Open Land / Soil"),
+                ("built_up", "Built-up / Construction"),
+                ("unclassified", "Unclassified")
+            ] %}
+            <div class="land-class-row">
+                <span class="land-class-swatch {{ cls }}"></span>
+                <span class="land-class-label">{{ label }}</span>
+                <span class="land-class-pct">{{ land_classification.percentages.get(cls, 0) }}%</span>
+            </div>
+            {% endfor %}
+
+            <div class="land-class-dominant">
+                Dominant land type: <strong>{{ land_classification.dominant | replace("_", " ") | title }}</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endif %}

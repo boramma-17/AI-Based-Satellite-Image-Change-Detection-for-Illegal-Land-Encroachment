@@ -1,114 +1,569 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}
-Upload Satellite Images - GeoGuard AI
-{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block content %}
+    <title>GeoGuard AI - Upload</title>
 
-<div class="card">
-
-    <h1>
-        Upload Satellite Imagery
-    </h1>
-
-    <p class="muted">
-        Compare a baseline image with a recent image.
-    </p>
-
-    <form
-        action="{{ url_for('upload.upload') }}"
-        method="POST"
-        enctype="multipart/form-data"
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
-        <label>
-            Detection Title
-        </label>
+    <!-- GeoGuard AI CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
 
-        <input
-            type="text"
-            name="title"
-            placeholder="Land Encroachment Check"
-        >
+<body>
 
-        <div class="grid">
+<!-- =========================================================
+     NAVIGATION
+     ========================================================= -->
 
-            <div>
+<header class="site-header">
 
-                <label>
-                    Before Image (Baseline)
-                </label>
+    <div class="site-nav">
 
-                <input
-                    type="file"
-                    name="before_image"
-                    accept=".png,.jpg,.jpeg,.tif,.tiff"
-                    required
-                >
+        <a href="/dashboard" class="site-brand">
+            <span class="brand-icon">🛰️</span>
+            <span>GeoGuard AI</span>
+        </a>
+
+
+        <nav class="site-nav-links">
+
+            <a href="/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/upload/" class="active">
+                Upload
+            </a>
+
+            <a href="/history">
+                History
+            </a>
+
+            <a href="/history/map">
+                Map
+            </a>
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     MAIN CONTENT
+     ========================================================= -->
+
+<main>
+
+    <div class="container upload-page">
+
+
+        <!-- =================================================
+             PAGE HEADER
+             ================================================= -->
+
+        <section class="upload-header">
+
+            <span class="live-badge">
+                ● SATELLITE MONITORING
+            </span>
+
+            <h1>
+                Satellite Change Detection
+            </h1>
+
+            <p>
+                Upload two satellite images and select the exact
+                geographical location for analysis.
+            </p>
+
+        </section>
+
+
+        <!-- =================================================
+             UPLOAD CARD
+             ================================================= -->
+
+        <section class="card upload-card">
+
+            <form
+                action="/upload/"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+
+                <!-- =================================================
+                     DETECTION INFORMATION
+                     ================================================= -->
+
+                <div class="form-grid">
+
+
+                    <!-- DETECTION TITLE - OPTIONAL -->
+
+                    <div class="form-field">
+
+                        <label for="title">
+                            Detection Title
+                            <span class="optional-label">
+                                Optional
+                            </span>
+                        </label>
+
+                        <input
+                            id="title"
+                            type="text"
+                            name="title"
+                            placeholder="Forest Monitoring Area"
+                        >
+
+                    </div>
+
+
+                    <!-- LOCATION NAME - OPTIONAL -->
+
+                    <div class="form-field">
+
+                        <label for="location_name">
+                            Location Name
+                            <span class="optional-label">
+                                Optional
+                            </span>
+                        </label>
+
+                        <input
+                            id="location_name"
+                            type="text"
+                            name="location_name"
+                            placeholder="Sector / Village / District"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     LAND TYPE
+                     ================================================= -->
+
+                <div class="form-grid land-type-row">
+
+                    <div class="form-field">
+
+                        <label for="land_type">
+                            Land Type
+                        </label>
+
+                        <select
+                            id="land_type"
+                            name="land_type"
+                            required
+                        >
+
+                            <option value="">
+                                Select Land Type
+                            </option>
+
+                            <option value="Forest">
+                                Forest
+                            </option>
+
+                            <option value="Water Body">
+                                Water Body
+                            </option>
+
+                            <option value="Urban">
+                                Urban
+                            </option>
+
+                            <option value="Agriculture">
+                                Agriculture
+                            </option>
+
+                            <option value="Open Land">
+                                Open Land
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     LOCATION SELECTION
+                     ================================================= -->
+
+                <div class="location-section">
+
+                    <h2>
+                        Select Detection Location
+                    </h2>
+
+                    <p class="map-help">
+                        Click anywhere on the map to select the
+                        location of the satellite images.
+                    </p>
+
+
+                    <!-- MAP -->
+
+                    <div
+                        id="upload-map"
+                        class="upload-map"
+                    ></div>
+
+
+                    <!-- =================================================
+                         COORDINATES
+                         ================================================= -->
+
+                    <div class="coordinates">
+
+
+                        <!-- LATITUDE -->
+
+                        <div class="form-field">
+
+                            <label for="latitude">
+                                Latitude
+                            </label>
+
+                            <input
+                                id="latitude"
+                                name="latitude"
+                                type="number"
+                                step="any"
+                                placeholder="Click map"
+                                readonly
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- LONGITUDE -->
+
+                        <div class="form-field">
+
+                            <label for="longitude">
+                                Longitude
+                            </label>
+
+                            <input
+                                id="longitude"
+                                name="longitude"
+                                type="number"
+                                step="any"
+                                placeholder="Click map"
+                                readonly
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SATELLITE IMAGES
+                     ================================================= -->
+
+                <div class="image-upload-section">
+
+                    <h2>
+                        Satellite Images
+                    </h2>
+
+                    <p class="map-help">
+                        Upload the before and after satellite
+                        images for change detection.
+                    </p>
+
+
+                    <div class="image-upload-grid">
+
+
+                        <!-- =================================================
+                             BEFORE / BASELINE IMAGE
+                             ================================================= -->
+
+                        <div class="image-box">
+
+                            <div class="upload-icon">
+                                🛰️
+                            </div>
+
+                            <h3>
+                                Baseline Image
+                            </h3>
+
+                            <p>
+                                Previous satellite image
+                            </p>
+
+
+                            <label class="file-label">
+
+                                <span>
+                                    Choose Baseline Image
+                                </span>
+
+                                <input
+                                    type="file"
+                                    name="before_image"
+                                    accept=".jpg,.jpeg,.png,.tif,.tiff"
+                                    required
+                                >
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             AFTER / PRESENT IMAGE
+                             ================================================= -->
+
+                        <div class="image-box">
+
+                            <div class="upload-icon">
+                                🔍
+                            </div>
+
+                            <h3>
+                                Present Image
+                            </h3>
+
+                            <p>
+                                Current satellite image
+                            </p>
+
+
+                            <label class="file-label">
+
+                                <span>
+                                    Choose Present Image
+                                </span>
+
+                                <input
+                                    type="file"
+                                    name="after_image"
+                                    accept=".jpg,.jpeg,.png,.tif,.tiff"
+                                    required
+                                >
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SUBMIT BUTTON
+                     ================================================= -->
+
+                <div class="analyze-section">
+
+                    <button
+                        type="submit"
+                        class="analyze-button"
+                    >
+                        🚀 Analyze Satellite Images
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<!-- =========================================================
+     LEAFLET JAVASCRIPT
+     ========================================================= -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /*
+     * Find map element
+     */
+    const mapElement =
+        document.getElementById("upload-map");
+
+
+    /*
+     * Stop if map element does not exist
+     */
+    if (!mapElement) {
+        return;
+    }
+
+
+    /*
+     * Create map
+     *
+     * Default:
+     * India
+     */
+    const map = L.map("upload-map").setView(
+        [20.5937, 78.9629],
+        5
+    );
+
+
+    /*
+     * OpenStreetMap layer
+     */
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+
+
+    /*
+     * Marker variable
+     */
+    let marker = null;
+
+
+    /*
+     * When user clicks on map
+     */
+    map.on("click", function (event) {
+
+
+        /*
+         * Get coordinates
+         */
+        const latitude =
+            event.latlng.lat;
+
+        const longitude =
+            event.latlng.lng;
+
+
+        /*
+         * Get input fields
+         */
+        const latitudeInput =
+            document.getElementById("latitude");
+
+        const longitudeInput =
+            document.getElementById("longitude");
+
+
+        /*
+         * Put coordinates into form
+         */
+        latitudeInput.value =
+            latitude.toFixed(6);
+
+        longitudeInput.value =
+            longitude.toFixed(6);
+
+
+        /*
+         * Remove old marker
+         */
+        if (marker) {
+
+            map.removeLayer(marker);
+
+        }
+
+
+        /*
+         * Create new marker
+         */
+        marker = L.marker([
+            latitude,
+            longitude
+        ]).addTo(map);
+
+
+        /*
+         * Show selected location
+         */
+        marker.bindPopup(
+            `
+            <div class="map-popup">
+
+                <strong>
+                    Selected Detection Area
+                </strong>
+
+                <br>
+
+                Latitude:
+                ${latitude.toFixed(6)}
+
+                <br>
+
+                Longitude:
+                ${longitude.toFixed(6)}
 
             </div>
+            `
+        ).openPopup();
 
-            <div>
+    });
 
-                <label>
-                    After Image (Recent)
-                </label>
 
-                <input
-                    type="file"
-                    name="after_image"
-                    accept=".png,.jpg,.jpeg,.tif,.tiff"
-                    required
-                >
+    /*
+     * Fix Leaflet map rendering
+     */
+    setTimeout(function () {
 
-            </div>
+        map.invalidateSize();
 
-        </div>
+    }, 300);
 
-        <div class="grid">
+});
 
-            <div>
+</script>
 
-                <label>
-                    Latitude (Optional)
-                </label>
 
-                <input
-                    type="number"
-                    step="any"
-                    name="latitude"
-                    placeholder="17.3850"
-                >
+</body>
 
-            </div>
-
-            <div>
-
-                <label>
-                    Longitude (Optional)
-                </label>
-
-                <input
-                    type="number"
-                    step="any"
-                    name="longitude"
-                    placeholder="78.4867"
-                >
-
-            </div>
-
-        </div>
-
-        <button
-            type="submit"
-            style="width:100%;"
-        >
-            Run Encroachment Detection
-        </button>
-
-    </form>
-
-</div>
-
-{% endblock %}
+</html>

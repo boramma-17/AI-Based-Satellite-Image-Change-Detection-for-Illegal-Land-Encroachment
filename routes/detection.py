@@ -8,68 +8,85 @@ from flask import (
     flash,
     current_app,
     session,
-    abort,
+    abort
 )
 
-from utils.database import get_db
 from utils.helpers import login_required
+from utils.database import get_db
+
 from services.ai_service import run_detection
 
 
-# ONLY ONE detection blueprint
-bp = Blueprint("detection", __name__)
+bp = Blueprint(
+    "detection",
+    __name__,
+    url_prefix="/detection"
+)
 
 
-def _get_owned_detection(db, detection_id):
+def get_owned_detection(
+    db,
+    detection_id
+):
+
     detection = db.execute(
         """
         SELECT *
         FROM detections
         WHERE id = ?
-        AND user_id = ?
+          AND user_id = ?
         """,
         (
             detection_id,
-            session["user_id"],
-        ),
+            session["user_id"]
+        )
     ).fetchone()
 
     if detection is None:
+
         abort(404)
 
     return detection
 
 
-@bp.route("/detection/<int:detection_id>/run")
+@bp.route(
+    "/<int:detection_id>/run"
+)
 @login_required
-def run_detection_view(detection_id):
+def run_detection_view(
+    detection_id
+):
 
     db = get_db()
 
-    detection = _get_owned_detection(
+    detection = get_owned_detection(
         db,
         detection_id
     )
 
+    config = current_app.config
+
     before_path = os.path.join(
-        current_app.config["UPLOAD_BEFORE"],
-        detection["before_image"],
+        config["UPLOAD_BEFORE"],
+        detection["before_image"]
     )
 
     after_path = os.path.join(
-        current_app.config["UPLOAD_AFTER"],
-        detection["after_image"],
+        config["UPLOAD_AFTER"],
+        detection["after_image"]
     )
 
     try:
+
         result = run_detection(
             before_path,
-            after_path,
+            after_path
         )
 
-    except Exception as e:
+    except Exception as error:
+
         flash(
-            f"Detection failed: {e}",
+            f"Detection failed: {error}",
             "error"
         )
 
@@ -83,44 +100,55 @@ def run_detection_view(detection_id):
         SET
             result_image = ?,
             change_percent = ?,
-            encroachment_flag = ?
+            encroachment_flag = ?,
+            land_type = ?,
+            decision = ?
         WHERE id = ?
+          AND user_id = ?
         """,
         (
             result["result_filename"],
             result["change_percent"],
-            int(result["encroachment_flag"]),
+            result["encroachment_flag"],
+            result["land_type"],
+            result["decision"],
             detection_id,
-        ),
+            session["user_id"]
+        )
     )
 
     db.commit()
 
     flash(
-        "Detection completed successfully.",
+        "Satellite image detection completed.",
         "success"
     )
 
     return redirect(
         url_for(
             "detection.result",
-            detection_id=detection_id,
+            detection_id=detection_id
         )
     )
 
 
-@bp.route("/detection/<int:detection_id>")
+@bp.route(
+    "/<int:detection_id>"
+)
 @login_required
-def result(detection_id):
+def result(
+    detection_id
+):
 
     db = get_db()
 
-    detection = _get_owned_detection(
+    detection = get_owned_detection(
         db,
         detection_id
     )
 
     return render_template(
         "result.html",
-        detection=detection,
+        detection=detection
     )
+    

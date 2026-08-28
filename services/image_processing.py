@@ -7,53 +7,64 @@ def detect_encroachment(
     after_path,
     result_path
 ):
+    """
+    Compare two satellite images.
 
-    img1 = cv2.imread(
+    Returns:
+        dict containing:
+        - change_percent
+        - encroachment_flag
+        - land_type
+    """
+
+    before = cv2.imread(
         before_path
     )
 
-    img2 = cv2.imread(
+    after = cv2.imread(
         after_path
     )
 
-    if img1 is None:
+    if before is None:
 
         raise ValueError(
-            "Could not load the before image."
+            "Unable to load the before image."
         )
 
-    if img2 is None:
+    if after is None:
 
         raise ValueError(
-            "Could not load the after image."
+            "Unable to load the after image."
         )
 
-    # Resize after image to match before image
-    img2 = cv2.resize(
-        img2,
+    # Resize after image
+    after = cv2.resize(
+        after,
         (
-            img1.shape[1],
-            img1.shape[0]
+            before.shape[1],
+            before.shape[0]
         )
     )
 
-    gray1 = cv2.cvtColor(
-        img1,
+    gray_before = cv2.cvtColor(
+        before,
         cv2.COLOR_BGR2GRAY
     )
 
-    gray2 = cv2.cvtColor(
-        img2,
+    gray_after = cv2.cvtColor(
+        after,
         cv2.COLOR_BGR2GRAY
     )
 
-    diff = cv2.absdiff(
-        gray1,
-        gray2
+    # Calculate difference
+    difference = cv2.absdiff(
+        gray_before,
+        gray_after
     )
 
+    # Threshold
     _, threshold = cv2.threshold(
-        diff,
+        difference,
         30,
         255,
         cv2.THRESH_BINARY
@@ -61,7 +72,7 @@ def detect_encroachment(
 
     # Remove small noise
     kernel = np.ones(
-        (3, 3),
+        (5, 5),
         np.uint8
     )
 
@@ -71,38 +82,34 @@ def detect_encroachment(
         kernel
     )
 
-    threshold = cv2.dilate(
+    threshold = cv2.morphologyEx(
         threshold,
-        kernel,
-        iterations=1
+        cv2.MORPH_CLOSE,
+        kernel
     )
 
+    # Calculate changed area
+    changed_pixels = np.count_nonzero(
+        threshold
+    )
+
+    total_pixels = threshold.shape[0] * threshold.shape[1]
+
+    change_percent = (
+        changed_pixels /
+        total_pixels
+    ) * 100
+
+    # Find changed areas
     contours, _ = cv2.findContours(
         threshold,
         cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE
     )
 
-    result_img = img2.copy()
+    result_image = after.copy()
 
-    changed_pixels = cv2.countNonZero(
-        threshold
-    )
-
-    total_pixels = threshold.shape[0] * threshold.shape[1]
-
-    if total_pixels > 0:
-
-        change_percent = (
-            changed_pixels /
-            total_pixels
-        ) * 100
-
-    else:
-
-        change_percent = 0.0
-
-    encroachment_detected = False
+    significant_change = False
 
     for contour in contours:
 
@@ -110,34 +117,38 @@ def detect_encroachment(
             contour
         )
 
-        if area > 100:
+        if area < 100:
+            continue
 
-            encroachment_detected = True
+        significant_change = True
 
-            x, y, w, h = cv2.boundingRect(
-                contour
-            )
-
-            cv2.rectangle(
-                result_img,
-                (x, y),
-                (x + w, y + h),
-                (0, 0, 255),
-                2
-            )
-
-    success = cv2.imwrite(
-        result_path,
-        result_img
-    )
-
-    if not success:
-
-        raise ValueError(
-            "Could not save result image."
+        x, y, w, h = cv2.boundingRect(
+            contour
         )
 
+        cv2.rectangle(
+            result_image,
+            (x, y),
+            (x + w, y + h),
+            (0, 0, 255),
+            3
+        )
+
+    cv2.imwrite(
+        result_path,
+        result_image
+    )
+
+    # Land classification is a placeholder
+    # until the trained classification model
+    # is connected.
+    land_type = "Unknown"
+
     return {
-        "encroachment_flag": encroachment_detected,
-        "change_percent": float(change_percent)
+        "change_percent": round(
+            float(change_percent),
+            2
+        ),
+        "encroachment_flag": significant_change,
+        "land_type": land_type
     }

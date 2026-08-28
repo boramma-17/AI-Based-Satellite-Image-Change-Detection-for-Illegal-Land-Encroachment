@@ -16,16 +16,16 @@ def validate_registration(
             "Username is required."
         )
 
-    elif len(username) < 2:
+    elif len(username) < 3:
 
         errors.append(
-            "Username must contain at least 2 characters."
+            "Username must contain at least 3 characters."
         )
 
     if not email:
 
         errors.append(
-            "Email is required."
+            "Email address is required."
         )
 
     elif not re.match(
@@ -68,7 +68,7 @@ def validate_login(
     if not email:
 
         errors.append(
-            "Email is required."
+            "Email address is required."
         )
 
     if not password:

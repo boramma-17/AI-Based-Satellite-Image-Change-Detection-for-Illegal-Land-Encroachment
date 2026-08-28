@@ -1,168 +1,330 @@
 {% extends "base.html" %}
 
-{% block title %}
-Detection Result - GeoGuard AI
+{% block title %}GeoGuard AI | Forensic Analysis & Change Detection{% endblock %}
+
+{% block extra_head %}
+<style>
+    .split-view-container {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* Comparison Slider Wrapper */
+    .slider-wrapper {
+        position: relative;
+        width: 100%;
+        height: 540px;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-highlight);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.7);
+        user-select: none;
+        background: #000;
+    }
+
+    .slider-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background-color: #050b14;
+    }
+
+    .slider-before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 2;
+        background-color: #050b14;
+    }
+
+    .slider-before img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    /* Interactive Divider Line & Handle */
+    .slider-handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 3px;
+        background: var(--primary);
+        z-index: 10;
+        cursor: ew-resize;
+        box-shadow: 0 0 12px var(--primary);
+    }
+
+    .slider-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(8, 13, 26, 0.9);
+        border: 2px solid var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    /* Floating Timestamp Labels */
+    .floating-badge {
+        position: absolute;
+        top: 16px;
+        padding: 6px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: rgba(8, 13, 26, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--border-subtle);
+        z-index: 5;
+    }
+
+    .badge-before-pos { left: 16px; color: var(--text-muted); }
+    .badge-after-pos { right: 16px; color: var(--primary); }
+
+    /* AI Heatmap Overlay Mask */
+    .ai-mask-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        z-index: 4;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .ai-mask-layer.active {
+        opacity: 0.9;
+    }
+
+    @media (max-width: 990px) {
+        .split-view-container { grid-template-columns: 1fr; }
+        .slider-wrapper { height: 380px; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-
-<div class="card">
-
-    <h1>
-        Detection Result
-    </h1>
-
-    <p class="muted">
-
-        Detection #{{ detection["id"] }}
-
-        {% if detection["title"] %}
-            — {{ detection["title"] }}
-        {% endif %}
-
-    </p>
-
-    <div class="grid">
-
-        <div class="stat">
-
-            <div class="muted">
-                Change Percentage
-            </div>
-
-            <div class="stat-number">
-
-                {{ "%.2f"|format(
-                    detection["change_percent"] or 0
-                ) }}%
-
-            </div>
-
+<div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+    <div>
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">
+            <i data-lucide="crosshair" style="width: 14px;"></i> INCIDENT RUN #{{ detection.id }}
         </div>
-
-        <div class="stat">
-
-            <div class="muted">
-                Encroachment Status
-            </div>
-
-            <div class="stat-number">
-
-                {% if detection["encroachment_flag"] %}
-
-                    <span class="danger">
-                        DETECTED
-                    </span>
-
-                {% else %}
-
-                    <span class="success">
-                        NOT DETECTED
-                    </span>
-
-                {% endif %}
-
-            </div>
-
-        </div>
-
+        <h1>{{ detection.title or 'Spatial Change Verification' }}</h1>
     </div>
 
-</div>
-
-
-<div class="card"
-     style="margin-top:25px;">
-
-    <h2>
-        Satellite Images
-    </h2>
-
-    <div class="images">
-
-        <div>
-
-            <h3>
-                Before Image
-            </h3>
-
-            <img
-                src="{{ url_for(
-                    'media_before',
-                    filename=detection['before_image']
-                ) }}"
-                alt="Before satellite image"
-            >
-
-        </div>
-
-
-        <div>
-
-            <h3>
-                After Image
-            </h3>
-
-            <img
-                src="{{ url_for(
-                    'media_after',
-                    filename=detection['after_image']
-                ) }}"
-                alt="After satellite image"
-            >
-
-        </div>
-
-
-        {% if detection["result_image"] %}
-
-        <div>
-
-            <h3>
-                AI Detection Result
-            </h3>
-
-            <img
-                src="{{ url_for(
-                    'media_results',
-                    filename=detection['result_image']
-                ) }}"
-                alt="AI detection result"
-            >
-
-        </div>
-
-        {% endif %}
-
-    </div>
-
-</div>
-
-
-<div class="card"
-     style="margin-top:25px;">
-
-    {% if detection["result_image"] %}
-
-        <a
-            class="btn"
-            href="{{ url_for(
-                'report.download_report',
-                detection_id=detection['id']
-            ) }}"
-        >
-            Download PDF Report
+    <div style="display: flex; gap: 10px;">
+        <button id="toggle-mask-btn" class="btn btn-secondary" onclick="toggleAIMask()">
+            <i data-lucide="layers" style="width: 16px;"></i> Toggle AI Difference Mask
+        </button>
+        <a href="{{ url_for('history.map_view') }}" class="btn btn-secondary">
+            <i data-lucide="map-pin" style="width: 16px;"></i> View on Map
         </a>
-
-    {% endif %}
-
-    <a
-        class="btn btn-secondary"
-        href="{{ url_for('history.history') }}"
-    >
-        Back to History
-    </a>
-
+    </div>
 </div>
 
+<div class="split-view-container">
+
+    <!-- Comparison Slider -->
+    <div class="slider-wrapper" id="comparison-slider">
+        <span class="floating-badge badge-before-pos">Past Baseline (T1)</span>
+        <span class="floating-badge badge-after-pos">Present Satellite (T2)</span>
+
+        <!-- After Image (Bottom Layer) -->
+        <img 
+            src="{{ url_for('media_after', filename=(detection.after_image or detection.after_img)) }}" 
+            class="slider-img" 
+            alt="Present Satellite Image"
+        >
+
+        <!-- AI Generated Change Mask -->
+        {% if detection.result_image or detection.result_img %}
+        <img 
+            id="ai-mask" 
+            src="{{ url_for('media_results', filename=(detection.result_image or detection.result_img)) }}" 
+            class="ai-mask-layer" 
+            alt="AI Detection Mask"
+        >
+        {% endif %}
+
+        <!-- Before Image (Top Cut Layer) -->
+        <div class="slider-before" id="before-layer">
+            <img 
+                id="before-img" 
+                src="{{ url_for('media_before', filename=(detection.before_image or detection.before_img)) }}" 
+                alt="Historical Satellite Image"
+            >
+        </div>
+
+        <!-- Draggable Divider -->
+        <div class="slider-handle" id="slider-handle">
+            <div class="slider-button">
+                <i data-lucide="chevrons-left-right" style="width: 18px;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forensic Breakdown Panel -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Legality Decision Rule Card -->
+        <div class="card" style="padding: 24px;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Legality Engine</span>
+            
+            <div style="margin: 12px 0 16px;">
+                {% if detection.encroachment_flag == 1 or detection.status == 'Illegal' %}
+                    <span class="badge badge-illegal" style="font-size: 0.85rem; padding: 6px 14px;">
+                        <i data-lucide="alert-octagon" style="width: 16px;"></i> Illegal Encroachment
+                    </span>
+                {% else %}
+                    <span class="badge badge-legal" style="font-size: 0.85rem; padding: 6px 14px;">
+                        <i data-lucide="check-circle-2" style="width: 16px;"></i> Approved / Permitted
+                    </span>
+                {% endif %}
+            </div>
+
+            <p style="font-size: 0.85rem; margin-bottom: 0;">
+                {% if detection.encroachment_flag == 1 %}
+                    <strong>Violation Flagged:</strong> Unscheduled structural shift on protected <strong>{{ detection.land_type }}</strong> terrain exceeds baseline deviation thresholds.
+                {% else %}
+                    <strong>Clearance:</strong> Observed alterations match permissible thresholds for <strong>{{ detection.land_type }}</strong> zoning.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Metric Details -->
+        <div class="card" style="padding: 24px;">
+            <h3 style="font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="bar-chart-2" style="width: 16px; color: var(--primary);"></i> Quantitative Metrics
+            </h3>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.875rem;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Sector Target:</span>
+                    <strong style="color: #fff;">{{ detection.location_name }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Land Classification:</span>
+                    <strong style="color: var(--primary);">{{ detection.land_type }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Estimated Area Altered:</span>
+                    <strong class="mono" style="color: #fff;">{{ detection.area_sqm }} m²</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Surface Shift:</span>
+                    <strong class="mono" style="color: {% if detection.encroachment_flag %}var(--danger){% else %}var(--success){% endif %};">
+                        +{{ "%.2f"|format(detection.change_percent or 0.0) }}%
+                    </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-top: 4px;">
+                    <span style="color: var(--text-muted);">Analysis Timestamp:</span>
+                    <span class="mono" style="color: var(--text-dim); font-size: 0.75rem;">{{ detection.created_at }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Action -->
+        <button class="btn btn-primary" style="width: 100%;" onclick="window.print()">
+            <i data-lucide="printer"></i> Export Authority Dossier
+        </button>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const container = document.getElementById('comparison-slider');
+    const beforeLayer = document.getElementById('before-layer');
+    const beforeImg = document.getElementById('before-img');
+    const handle = document.getElementById('slider-handle');
+    let isDragging = false;
+
+    function resizeBeforeImage() {
+        if (container && beforeImg) {
+            beforeImg.style.width = container.offsetWidth + 'px';
+        }
+    }
+
+    window.addEventListener('resize', resizeBeforeImage);
+    window.addEventListener('load', resizeBeforeImage);
+    resizeBeforeImage();
+
+    function updateSliderPosition(clientX) {
+        const rect = container.getBoundingClientRect();
+        let offsetX = clientX - rect.left;
+
+        if (offsetX < 0) offsetX = 0;
+        if (offsetX > rect.width) offsetX = rect.width;
+
+        const percentage = (offsetX / rect.width) * 100;
+        beforeLayer.style.width = percentage + '%';
+        handle.style.left = percentage + '%';
+    }
+
+    container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        updateSliderPosition(e.clientX);
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        updateSliderPosition(e.clientX);
+    });
+
+    container.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        updateSliderPosition(e.touches[0].clientX);
+    });
+
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        updateSliderPosition(e.touches[0].clientX);
+    });
+
+    function toggleAIMask() {
+        const mask = document.getElementById('ai-mask');
+        const btn = document.getElementById('toggle-mask-btn');
+        if (!mask) return;
+
+        mask.classList.toggle('active');
+
+        if (mask.classList.contains('active')) {
+            btn.classList.add('btn-primary');
+            btn.classList.remove('btn-secondary');
+        } else {
+            btn.classList.add('btn-secondary');
+            btn.classList.remove('btn-primary');
+        }
+    }
+</script>
 {% endblock %}

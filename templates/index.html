@@ -1,43 +1,133 @@
 {% extends "base.html" %}
 
-{% block title %}
-GeoGuard AI - Home
-{% endblock %}
+{% block title %}GeoGuard AI | Satellite Land Change Intelligence{% endblock %}
 
 {% block content %}
+<div style="display: flex; flex-direction: column; gap: 40px;">
 
-<div class="card">
+    <!-- Primary Hero Section -->
+    <section class="card" style="padding: 40px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(14, 116, 144, 0.15) 100%);">
+        <div style="max-width: 850px;">
+            <span class="badge" style="background: rgba(56, 189, 248, 0.15); border: 1px solid var(--border-highlight); color: var(--primary); margin-bottom: 16px;">
+                <i data-lucide="satellite" style="width: 14px; height: 14px;"></i> System Objectives & Scope
+            </span>
+            
+            <h1 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); margin-bottom: 14px;">
+                Satellite Land Change Detection System
+            </h1>
+            
+            <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 24px;">
+                To develop an AI-based system that analyzes satellite images to detect land changes, accurately identify distinct terrain types, evaluate legality through policy decision rules, and generate actionable geotagged reports.
+            </p>
 
-    <h1>
-        AI-Based Satellite Image Change Detection
-    </h1>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="{{ url_for('upload.upload') if session.get('user_id') else url_for('auth.register') }}" class="btn btn-primary">
+                    <i data-lucide="upload-cloud" style="width: 18px; height: 18px;"></i> Upload Satellite Images
+                </a>
+                <a href="{{ url_for('history.map_view') }}" class="btn btn-secondary">
+                    <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> View Geotagged Map
+                </a>
+            </div>
+        </div>
+    </section>
 
-    <p class="muted">
-        Detect possible land encroachment by comparing
-        baseline and recent satellite imagery.
-    </p>
+    <!-- Core Objectives Matrix -->
+    <section>
+        <div style="margin-bottom: 20px;">
+            <h2>System Objectives & Architecture</h2>
+            <p>Functional breakdown aligned with automated classification, verification, and reporting protocols.</p>
+        </div>
 
-    {% if session.get("user_id") %}
+        <div class="grid">
+            
+            <!-- Objective 1 -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div class="brand-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--primary);">
+                        <i data-lucide="cpu" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3>AI-Based Image Analysis</h3>
+                </div>
+                <p>To develop an AI-based system that analyzes satellite images to detect land changes.</p>
+            </div>
 
-        <a class="btn"
-           href="{{ url_for('upload.upload') }}">
-            Start Detection
+            <!-- Objective 2 -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div class="brand-icon" style="background: rgba(20, 184, 166, 0.15); color: var(--secondary);">
+                        <i data-lucide="layers" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3>Land Classification</h3>
+                </div>
+                <p>To identify different land types such as forest, water bodies, and open land using available datasets.</p>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;">
+                    <span class="badge badge-forest">Forest</span>
+                    <span class="badge badge-water">Water Bodies</span>
+                    <span class="badge badge-open-land">Open Land</span>
+                </div>
+            </div>
+
+            <!-- Objective 3 -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div class="brand-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--primary);">
+                        <i data-lucide="git-compare" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3>Temporal Comparison</h3>
+                </div>
+                <p>To compare past and present satellite images to detect new constructions or unauthorized changes.</p>
+            </div>
+
+            <!-- Objective 4 -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div class="brand-icon" style="background: rgba(244, 63, 94, 0.15); color: var(--danger);">
+                        <i data-lucide="scale" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3>Decision-Based Legality</h3>
+                </div>
+                <p>To determine whether detected changes are legal or illegal by applying land-type-based decision rules.</p>
+                <div style="display: flex; gap: 6px; margin-top: 12px;">
+                    <span class="badge-legal">Legal Status</span>
+                    <span class="badge-illegal">Illegal Status</span>
+                </div>
+            </div>
+
+            <!-- Objective 5 -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div class="brand-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+                        <i data-lucide="filter-check" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3>Noise & False Detection Filter</h3>
+                </div>
+                <p>To reduce false detections by combining image analysis with land classification data.</p>
+            </div>
+
+            <!-- Objective 6 -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                    <div class="brand-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--primary);">
+                        <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3>Geotagged Visual Reports</h3>
+                </div>
+                <p>To generate geotagged visual reports highlighting encroachment areas for authorities.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Execution Panel -->
+    <section class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;">
+        <div>
+            <h2>Run Change Detection Analysis</h2>
+            <p style="margin-bottom: 0;">Upload past and present raster files to apply classification and verification rules.</p>
+        </div>
+        <a href="{{ url_for('upload.upload') if session.get('user_id') else url_for('auth.register') }}" class="btn btn-primary" style="padding: 12px 24px;">
+            <i data-lucide="play" style="width: 18px; height: 18px;"></i> Start Image Comparison →
         </a>
-
-    {% else %}
-
-        <a class="btn"
-           href="{{ url_for('auth.login') }}">
-            Login
-        </a>
-
-        <a class="btn btn-secondary"
-           href="{{ url_for('auth.register') }}">
-            Create Account
-        </a>
-
-    {% endif %}
+    </section>
 
 </div>
-
 {% endblock %}

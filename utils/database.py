@@ -1,10 +1,11 @@
 import os
 import sqlite3
 
-from flask import g, current_app
+from flask import current_app, g
 
 
 def get_db():
+
     if "db" not in g:
 
         database_path = current_app.config["DATABASE"]
@@ -14,17 +15,22 @@ def get_db():
             exist_ok=True
         )
 
-        g.db = sqlite3.connect(database_path)
+        db = sqlite3.connect(database_path)
 
-        g.db.row_factory = sqlite3.Row
+        db.row_factory = sqlite3.Row
 
         # Enable foreign keys
-        g.db.execute("PRAGMA foreign_keys = ON")
+        db.execute(
+            "PRAGMA foreign_keys = ON"
+        )
+
+        g.db = db
 
     return g.db
 
 
-def close_db(e=None):
+def close_db(error=None):
+
     db = g.pop("db", None)
 
     if db is not None:
@@ -32,72 +38,102 @@ def close_db(e=None):
 
 
 def register_db_teardown(app):
+
     app.teardown_appcontext(close_db)
 
 
 def ensure_db_exists(app):
 
     database_path = app.config["DATABASE"]
+    schema_path = app.config["SCHEMA_FILE"]
 
-    # If database doesn't exist, create it from schema.sql
+    os.makedirs(
+        os.path.dirname(database_path),
+        exist_ok=True
+    )
+
+    # -------------------------------------------------
+    # Create database if it does not exist
+    # -------------------------------------------------
+
     if not os.path.exists(database_path):
 
-        with app.app_context():
+        if not os.path.exists(schema_path):
 
-            db = get_db()
-
-            schema_path = os.path.join(
-                app.root_path,
-                "schema.sql"
+            raise FileNotFoundError(
+                f"Database schema not found: {schema_path}"
             )
 
-            with open(
-                schema_path,
-                "r",
-                encoding="utf-8"
-            ) as f:
+        with open(
+            schema_path,
+            "r",
+            encoding="utf-8"
+        ) as f:
 
-                schema = f.read()
+            schema = f.read()
+
+        db = sqlite3.connect(database_path)
+
+        try:
+
+            db.execute("PRAGMA foreign_keys = ON")
 
             db.executescript(schema)
 
             db.commit()
 
-            return
+        finally:
 
-    # Make sure required tables exist
-    with app.app_context():
+            db.close()
 
-        db = get_db()
+    # -------------------------------------------------
+    # Update existing database
+    # -------------------------------------------------
 
-        tables = db.execute(
+    db = sqlite3.connect(database_path)
+
+    try:
+
+        db.execute("PRAGMA foreign_keys = ON")
+
+        # Check whether detections table exists
+        table = db.execute(
             """
             SELECT name
             FROM sqlite_master
-            WHERE type='table'
+            WHERE type = 'table'
+            AND name = 'detections'
             """
-        ).fetchall()
+        ).fetchone()
 
-        table_names = {
-            row["name"]
-            for row in tables
-        }
+        if table:
 
-        if "users" not in table_names or "detections" not in table_names:
+            columns = db.execute(
+                "PRAGMA table_info(detections)"
+            ).fetchall()
 
-            schema_path = os.path.join(
-                app.root_path,
-                "schema.sql"
-            )
+            column_names = {
+                column[1]
+                for column in columns
+            }
 
-            with open(
-                schema_path,
-                "r",
-                encoding="utf-8"
-            ) as f:
+            # Add decision_reason to old databases
+            if "decision_reason" not in column_names:
 
-                schema = f.read()
+                db.execute(
+                    """
+                    ALTER TABLE detections
+                    ADD COLUMN decision_reason TEXT
+                    """
+                )
 
-            db.executescript(schema)
+                print(
+                    "Database migration completed: "
+                    "decision_reason added."
+                )
 
-            db.commit()
+        db.commit()
+
+    finally:
+
+        db.close()

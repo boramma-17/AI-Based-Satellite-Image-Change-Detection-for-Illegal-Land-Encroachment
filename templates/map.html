@@ -1,86 +1,263 @@
 {% extends "base.html" %}
 
-{% block title %}
-Detection Map - GeoGuard AI
+{% block title %}GeoGuard AI | Real-Time Geospatial Surveillance{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<style>
+    .realtime-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        height: calc(100vh - 170px);
+        min-height: 600px;
+    }
+
+    .map-wrapper {
+        position: relative;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-subtle);
+        background: #000;
+    }
+
+    #realtime-map {
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .telemetry-sidebar {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .feed-container {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 14px;
+        padding-right: 4px;
+    }
+
+    .feed-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        font-size: 0.825rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .feed-card:hover {
+        border-color: var(--primary);
+        background: rgba(30, 41, 59, 0.8);
+    }
+
+    .feed-card.illegal {
+        border-left: 3px solid var(--danger);
+    }
+
+    .feed-card.legal {
+        border-left: 3px solid var(--success);
+    }
+
+    .pulse-marker-illegal {
+        width: 14px;
+        height: 14px;
+        background: #f43f5e;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+        animation: pin-pulse 1.8s infinite;
+    }
+
+    .pulse-marker-legal {
+        width: 12px;
+        height: 12px;
+        background: #10b981;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+    }
+
+    @keyframes pin-pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(244, 63, 94, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+
+    .leaflet-popup-content-wrapper {
+        background: #090d16 !important;
+        border: 1px solid var(--border-highlight) !important;
+        border-radius: 12px !important;
+        color: #f8fafc !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .leaflet-popup-tip {
+        background: #090d16 !important;
+    }
+
+    @media (max-width: 950px) {
+        .realtime-grid {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+        .map-wrapper { height: 480px; }
+        .telemetry-sidebar { height: 400px; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-
-<div class="card">
-
-    <h1>
-        Detection Locations
-    </h1>
-
-    {% if detections %}
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Detection</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>Status</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for detection in detections %}
-
-                <tr>
-
-                    <td>
-                        #{{ detection["id"] }}
-                    </td>
-
-                    <td>
-                        {{ detection["latitude"] or "N/A" }}
-                    </td>
-
-                    <td>
-                        {{ detection["longitude"] or "N/A" }}
-                    </td>
-
-                    <td>
-
-                        {% if detection["encroachment_flag"] %}
-
-                            <span class="danger">
-                                Encroachment
-                            </span>
-
-                        {% else %}
-
-                            <span class="success">
-                                Clear
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    {% else %}
-
-        <p class="muted">
-            No detection locations available.
-        </p>
-
-    {% endif %}
-
+<div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+    <div>
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--success); font-weight: 700; margin-bottom: 4px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success);"></span>
+            SATELLITE DOWNLINK LIVE
+        </div>
+        <h1>Real-Time Surveillance Map</h1>
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+        <span class="badge badge-illegal"><i data-lucide="alert-triangle" style="width: 14px;"></i> Encroachment</span>
+        <span class="badge badge-legal"><i data-lucide="shield-check" style="width: 14px;"></i> Permitted</span>
+    </div>
 </div>
 
+<div class="realtime-grid">
+    <div class="map-wrapper">
+        <div id="realtime-map"></div>
+    </div>
+
+    <div class="telemetry-sidebar">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+            <h3 style="font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="activity" style="width: 16px; color: var(--primary);"></i> Incursion Feed
+            </h3>
+            <span id="active-count" class="badge" style="background: rgba(56, 189, 248, 0.15); color: var(--primary);">0 Active</span>
+        </div>
+
+        <div id="feed-list" class="feed-container"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    let map;
+    const markersMap = new Map();
+    let initialViewSet = false;
+
+    function initMap() {
+        map = L.map('realtime-map', {
+            zoomControl: false
+        }).setView([12.9716, 77.5946], 11);
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+    }
+
+    function renderIncident(incident) {
+        if (markersMap.has(incident.id)) return;
+
+        const isIllegal = incident.status.toLowerCase() === 'illegal';
+        const iconClass = isIllegal ? 'pulse-marker-illegal' : 'pulse-marker-legal';
+
+        const customIcon = L.divIcon({
+            className: 'custom-pin',
+            html: `<div class="${iconClass}"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+        });
+
+        const marker = L.marker([incident.lat, incident.lng], { icon: customIcon }).addTo(map);
+
+        const popupContent = `
+            <div style="padding: 4px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                    <span style="font-size: 0.7rem; font-family: 'JetBrains Mono'; color: var(--text-dim);">${incident.id}</span>
+                    <span class="badge ${isIllegal ? 'badge-illegal' : 'badge-legal'}" style="font-size:0.65rem; padding: 2px 6px;">${incident.status}</span>
+                </div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 4px;">${incident.site || 'Monitored Sector'}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px;">Land Type: <strong style="color: #fff;">${incident.land_type || 'Unclassified'}</strong></div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Area: <strong style="color: #fff;">${incident.area_sqm || 0} m²</strong></div>
+                <div style="font-size: 0.72rem; color: var(--text-dim);">${incident.timestamp}</div>
+            </div>
+        `;
+        marker.bindPopup(popupContent);
+        markersMap.set(incident.id, marker);
+
+        prependFeedItem(incident, marker);
+    }
+
+    function prependFeedItem(incident, marker) {
+        const feedList = document.getElementById('feed-list');
+        const isIllegal = incident.status.toLowerCase() === 'illegal';
+
+        const card = document.createElement('div');
+        card.className = `feed-card ${isIllegal ? 'illegal' : 'legal'}`;
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <strong style="color: #fff;">${incident.site || 'Monitored Sector'}</strong>
+                <span style="color: ${isIllegal ? 'var(--danger)' : 'var(--success)'}; font-weight: 700;">${incident.status}</span>
+            </div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 4px;">
+                ${incident.land_type || 'Terrain'} • ${incident.area_sqm || 0} m²
+            </div>
+            <div style="color: var(--text-dim); font-size: 0.7rem; font-family: 'JetBrains Mono';">
+                ${incident.timestamp}
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            map.flyTo([incident.lat, incident.lng], 15, { duration: 1.2 });
+            marker.openPopup();
+        });
+
+        feedList.prepend(card);
+        document.getElementById('active-count').textContent = `${markersMap.size} Active`;
+    }
+
+    async function fetchLiveDetections() {
+        try {
+            const response = await fetch("{{ url_for('history.get_live_detections') }}");
+            const resData = await response.json();
+
+            if (resData.status === 'success' && resData.data.length > 0) {
+                resData.data.forEach(incident => renderIncident(incident));
+
+                // Auto-center map to the first detected coordinate once loaded
+                if (!initialViewSet && resData.data[0]) {
+                    map.setView([resData.data[0].lat, resData.data[0].lng], 12);
+                    initialViewSet = true;
+                }
+            }
+        } catch (err) {
+            console.error('Real-time feed error:', err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initMap();
+        fetchLiveDetections();
+        setInterval(fetchLiveDetections, 5000);
+    });
+</script>
 {% endblock %}

@@ -4,7 +4,8 @@ from flask import (
     session,
     redirect,
     url_for,
-    flash
+    flash,
+    abort
 )
 
 
@@ -24,7 +25,10 @@ def login_required(view_func):
                 url_for("auth.login")
             )
 
-        return view_func(*args, **kwargs)
+        return view_func(
+            *args,
+            **kwargs
+        )
 
     return wrapped
 
@@ -37,7 +41,7 @@ def admin_required(view_func):
         if "user_id" not in session:
 
             flash(
-                "Please log in first.",
+                "Please log in to continue.",
                 "error"
             )
 
@@ -47,16 +51,12 @@ def admin_required(view_func):
 
         if session.get("role") != "admin":
 
-            flash(
-                "Administrator access required.",
-                "error"
-            )
+            abort(403)
 
-            return redirect(
-                url_for("dashboard")
-            )
-
-        return view_func(*args, **kwargs)
+        return view_func(
+            *args,
+            **kwargs
+        )
 
     return wrapped
 

@@ -23,7 +23,8 @@ from utils.helpers import flash_errors
 
 bp = Blueprint(
     "auth",
-    __name__
+    __name__,
+    url_prefix="/auth"
 )
 
 
@@ -111,13 +112,12 @@ def register():
                 password_hash,
                 role
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, 'user')
             """,
             (
                 username,
                 email,
-                password_hash,
-                "user"
+                password_hash
             )
         )
 
@@ -197,16 +197,16 @@ def login():
 
         try:
 
-            password_valid = check_password_hash(
+            valid = check_password_hash(
                 user["password_hash"],
                 password
             )
 
         except Exception:
 
-            password_valid = False
+            valid = False
 
-        if not password_valid:
+        if not valid:
 
             flash(
                 "Invalid email or password.",
@@ -228,6 +228,12 @@ def login():
             f"Welcome back, {user['username']}!",
             "success"
         )
+
+        if user["role"] == "admin":
+
+            return redirect(
+                url_for("admin")
+            )
 
         return redirect(
             url_for("dashboard")

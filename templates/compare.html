@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Satellite Comparison - GeoGuard AI</title>
+
+    <!-- Leaflet Map -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/compare.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">🌍</div>
+
+            <div>
+                <h2>GeoGuard</h2>
+                <span>AI Monitoring</span>
+            </div>
+        </div>
+
+        <nav class="navigation">
+
+            <a href="{{ url_for('dashboard') }}">
+                <span>▦</span>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('upload.upload') }}" class="active">
+                <span>🛰</span>
+                New Detection
+            </a>
+
+            <a href="{{ url_for('history.history') }}">
+                <span>◷</span>
+                Detection History
+            </a>
+
+            <a href="{{ url_for('history.map_view') }}">
+                <span>⌖</span>
+                Detection Map
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            {% if session.get("role") == "admin" %}
+            <a href="{{ url_for('admin') }}">
+                <span>⚙</span>
+                Admin Panel
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('auth.logout') }}">
+                <span>↪</span>
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div>
+                <div class="breadcrumb">
+                    GeoGuard AI / New Detection
+                </div>
+
+                <h1>Satellite Image Comparison</h1>
+
+                <p>
+                    Compare satellite imagery to detect possible land
+                    encroachment and structural changes.
+                </p>
+            </div>
+
+            <div class="user-info">
+
+                <div class="avatar">
+                    {{ session.get("username", "U")[0]|upper }}
+                </div>
+
+                <div>
+                    <strong>
+                        {{ session.get("username", "User") }}
+                    </strong>
+
+                    <small>
+                        {{ session.get("role", "user")|capitalize }}
+                    </small>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= UPLOAD SECTION ================= -->
+
+        <section class="upload-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>Upload Satellite Images</h2>
+
+                    <p>
+                        Upload the baseline and current satellite images
+                        for comparison.
+                    </p>
+                </div>
+
+                <div class="supported">
+                    PNG · JPG · JPEG · TIFF
+                </div>
+
+            </div>
+
+
+            <form
+                id="comparisonForm"
+                action="{{ url_for('upload.upload') }}"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                <div class="upload-grid">
+
+
+                    <!-- BEFORE -->
+
+                    <div class="upload-card">
+
+                        <div class="upload-header">
+
+                            <div>
+                                <span class="image-number">01</span>
+
+                                <div>
+                                    <h3>Before Image</h3>
+                                    <p>Baseline satellite imagery</p>
+                                </div>
+                            </div>
+
+                            <span class="status-dot"></span>
+
+                        </div>
+
+
+                        <label
+                            class="drop-zone"
+                            id="beforeDrop"
+                        >
+
+                            <input
+                                type="file"
+                                id="beforeImage"
+                                name="before_image"
+                                accept=".png,.jpg,.jpeg,.tif,.tiff"
+                                hidden
+                                required
+                            >
+
+                            <div class="upload-icon">
+                                ↑
+                            </div>
+
+                            <h4>Drop satellite image here</h4>
+
+                            <p>
+                                or
+                                <span>browse files</span>
+                            </p>
+
+                            <small>
+                                Maximum size: 50 MB
+                            </small>
+
+                        </label>
+
+
+                        <div
+                            class="preview-container"
+                            id="beforePreview"
+                        >
+                            <img id="beforePreviewImage">
+
+                            <button
+                                type="button"
+                                class="remove-image"
+                                onclick="removeImage('before')"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- AFTER -->
+
+                    <div class="upload-card">
+
+                        <div class="upload-header">
+
+                            <div>
+                                <span class="image-number">02</span>
+
+                                <div>
+                                    <h3>After Image</h3>
+                                    <p>Current satellite imagery</p>
+                                </div>
+                            </div>
+
+                            <span class="status-dot"></span>
+
+                        </div>
+
+
+                        <label
+                            class="drop-zone"
+                            id="afterDrop"
+                        >
+
+                            <input
+                                type="file"
+                                id="afterImage"
+                                name="after_image"
+                                accept=".png,.jpg,.jpeg,.tif,.tiff"
+                                hidden
+                                required
+                            >
+
+                            <div class="upload-icon">
+                                ↑
+                            </div>
+
+                            <h4>Drop satellite image here</h4>
+
+                            <p>
+                                or
+                                <span>browse files</span>
+                            </p>
+
+                            <small>
+                                Maximum size: 50 MB
+                            </small>
+
+                        </label>
+
+
+                        <div
+                            class="preview-container"
+                            id="afterPreview"
+                        >
+                            <img id="afterPreviewImage">
+
+                            <button
+                                type="button"
+                                class="remove-image"
+                                onclick="removeImage('after')"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= LOCATION ================= -->
+
+                <div class="location-card">
+
+                    <div class="location-title">
+
+                        <div class="location-icon">
+                            ⌖
+                        </div>
+
+                        <div>
+                            <h3>Detection Location</h3>
+
+                            <p>
+                                Specify the coordinates of the monitored
+                                area.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="coordinates">
+
+                        <div class="field">
+
+                            <label>
+                                Latitude
+                            </label>
+
+                            <input
+                                type="number"
+                                step="any"
+                                name="latitude"
+                                id="latitude"
+                                placeholder="e.g. 12.9716"
+                            >
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label>
+                                Longitude
+                            </label>
+
+                            <input
+                                type="number"
+                                step="any"
+                                name="longitude"
+                                id="longitude"
+                                placeholder="e.g. 77.5946"
+                            >
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="location-button"
+                            onclick="useCurrentLocation()"
+                        >
+                            Use My Location
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= ACTIONS ================= -->
+
+                <div class="actions">
+
+                    <button
+                        type="button"
+                        class="btn secondary"
+                        onclick="resetComparison()"
+                    >
+                        Reset
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn primary"
+                        id="detectButton"
+                    >
+
+                        <span>Run AI Detection</span>
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+
+        <!-- ================= COMPARISON ================= -->
+
+        <section class="comparison-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>Visual Comparison</h2>
+
+                    <p>
+                        Drag the slider to compare the satellite images.
+                    </p>
+
+                </div>
+
+                <div class="comparison-status">
+                    <span></span>
+                    Ready for comparison
+                </div>
+
+            </div>
+
+
+            <div class="comparison-container" id="comparisonContainer">
+
+                <div class="comparison-empty">
+
+                    <div class="empty-icon">
+                        🛰
+                    </div>
+
+                    <h3>Images not loaded</h3>
+
+                    <p>
+                        Upload both satellite images above to preview
+                        the comparison.
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="before-layer"
+                    id="beforeLayer"
+                >
+
+                    <img
+                        id="comparisonBefore"
+                        alt="Before satellite image"
+                    >
+
+                </div>
+
+
+                <img
+                    id="comparisonAfter"
+                    class="after-image"
+                    alt="After satellite image"
+                >
+
+
+                <div
+                    class="comparison-divider"
+                    id="comparisonDivider"
+                >
+
+                    <div class="slider-handle">
+                        <span>‹</span>
+                        <span>›</span>
+                    </div>
+
+                </div>
+
+
+                <div class="comparison-label before-label">
+                    BEFORE
+                </div>
+
+                <div class="comparison-label after-label">
+                    AFTER
+                </div>
+
+
+                <input
+                    type="range"
+                    id="comparisonSlider"
+                    min="0"
+                    max="100"
+                    value="50"
+                    class="comparison-range"
+                >
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= RESULTS ================= -->
+
+        <section class="results-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>Detection Results</h2>
+
+                    <p>
+                        AI-generated analysis of the satellite imagery.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="results-grid">
+
+
+                <div class="result-card">
+
+                    <div class="result-icon blue">
+                        %
+                    </div>
+
+                    <div>
+
+                        <span class="result-label">
+                            Change Detected
+                        </span>
+
+                        <strong id="changePercent">
+                            —
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="result-card">
+
+                    <div class="result-icon orange">
+                        !
+                    </div>
+
+                    <div>
+
+                        <span class="result-label">
+                            Encroachment Status
+                        </span>
+
+                        <strong
+                            id="encroachmentStatus"
+                            class="status-neutral"
+                        >
+                            Pending
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="result-card">
+
+                    <div class="result-icon green">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <span class="result-label">
+                            Detection Confidence
+                        </span>
+
+                        <strong id="confidence">
+                            —
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="result-card">
+
+                    <div class="result-icon purple">
+                        #
+                    </div>
+
+                    <div>
+
+                        <span class="result-label">
+                            Detection ID
+                        </span>
+
+                        <strong id="detectionId">
+                            New
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="warning-panel"
+                id="warningPanel"
+            >
+
+                <div class="warning-symbol">
+                    !
+                </div>
+
+                <div>
+
+                    <h3>
+                        Potential Land Encroachment Detected
+                    </h3>
+
+                    <p>
+                        The AI model identified significant structural
+                        changes between the supplied satellite images.
+                        Review the highlighted result before taking
+                        further action.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= MAP ================= -->
+
+        <section class="map-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>Detection Location</h2>
+
+                    <p>
+                        Geographic location associated with this analysis.
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="map-button"
+                    onclick="centerMap()"
+                >
+                    Center Map
+                </button>
+
+            </div>
+
+
+            <div id="detectionMap"></div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer>
+
+            <span>
+                © 2026 GeoGuard AI
+            </span>
+
+            <span>
+                AI-Based Satellite Change Detection
+            </span>
+
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- Leaflet -->
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<script src="{{ url_for('static', filename='js/compare.js') }}"></script>
+
+</body>
+</html>
